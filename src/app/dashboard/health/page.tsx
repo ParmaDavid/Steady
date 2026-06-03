@@ -1,0 +1,1 @@
+export default function Page() { return (<div className="flex-1 overflow-y-auto p-6"><h1 className="text-2xl font-semibold text-gray-900 mb-2 capitalize">health</h1><p className="text-gray-500">Full dashboard coming in Phase 2. Use Chat to log data now.</p></div>) }
