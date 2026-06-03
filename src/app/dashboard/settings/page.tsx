@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const PROVIDERS = [
+const inputClass = "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
   { value: 'claude', label: 'Claude (Anthropic)', default_model: 'claude-sonnet-4-20250514' },
   { value: 'openai', label: 'ChatGPT (OpenAI)', default_model: 'gpt-4o' },
   { value: 'gemini', label: 'Gemini (Google)', default_model: 'gemini-1.5-pro' },
@@ -81,7 +81,7 @@ export default function SettingsPage() {
         <Section title="Your profile">
           <Field label="Display name">
             <input value={displayName} onChange={e => setDisplayName(e.target.value)}
-              className="input" placeholder="Jane" />
+              className={inputClass} placeholder="Jane" />
           </Field>
         </Section>
 
@@ -89,13 +89,13 @@ export default function SettingsPage() {
         <Section title="Household">
           <Field label="Household name">
             <input value={householdName} onChange={e => setHouseholdName(e.target.value)}
-              className="input" placeholder="The Smith House" />
+              className={inputClass} placeholder="The Smith House" />
           </Field>
           <Field label="Invite a member" hint="They'll get a link to join your household">
             <div className="flex gap-2">
               <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
-                className="input flex-1" placeholder="partner@example.com" type="email" />
-              <button onClick={inviteMember} className="btn-secondary">Send invite</button>
+                className={`${inputClass} flex-1`} placeholder="partner@example.com" type="email" />
+              <button onClick={inviteMember} className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors">Send invite</button>
             </div>
           </Field>
         </Section>
@@ -103,7 +103,7 @@ export default function SettingsPage() {
         {/* AI Provider */}
         <Section title="AI assistant">
           <Field label="Provider" hint="Which AI powers your chat assistant">
-            <select value={provider} onChange={e => setProvider(e.target.value)} className="input">
+            <select value={provider} onChange={e => setProvider(e.target.value)} className={inputClass}>
               {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
           </Field>
@@ -112,7 +112,7 @@ export default function SettingsPage() {
               type="password"
               value={apiKey}
               onChange={e => setApiKey(e.target.value)}
-              className="input"
+              className={inputClass}
               placeholder="sk-… or similar"
             />
           </Field>
@@ -122,21 +122,15 @@ export default function SettingsPage() {
         </Section>
 
         <div className="flex justify-end">
-          <button onClick={save} disabled={loading} className="btn-primary">
+          <button
+            onClick={save}
+            disabled={loading}
+            className="px-5 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
+          >
             {saved ? '✓ Saved' : loading ? 'Saving…' : 'Save changes'}
           </button>
         </div>
       </div>
-
-      <style jsx>{`
-        .input { width: 100%; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 12px; font-size: 14px; outline: none; }
-        .input:focus { border-color: #349470; box-shadow: 0 0 0 2px rgba(52,148,112,0.15); }
-        .btn-primary { padding: 8px 20px; background: #349470; color: white; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
-        .btn-primary:hover { background: #24775a; }
-        .btn-primary:disabled { opacity: 0.5; }
-        .btn-secondary { padding: 8px 14px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; cursor: pointer; }
-        .btn-secondary:hover { background: #f9fafb; }
-      `}</style>
     </div>
   )
 }
