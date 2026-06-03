@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 const inputClass = "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-  { value: 'claude', label: 'Claude (Anthropic)', default_model: 'claude-sonnet-4-20250514' },
-  { value: 'openai', label: 'ChatGPT (OpenAI)', default_model: 'gpt-4o' },
-  { value: 'gemini', label: 'Gemini (Google)', default_model: 'gemini-1.5-pro' },
+
+const PROVIDERS = [
+  { value: 'claude', label: 'Claude (Anthropic)' },
+  { value: 'openai', label: 'ChatGPT (OpenAI)' },
+  { value: 'gemini', label: 'Gemini (Google)' },
 ]
 
 export default function SettingsPage() {
@@ -23,14 +25,22 @@ export default function SettingsPage() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data: prefs } = await supabase.from('user_preferences').select('*').eq('user_id', user.id).single()
+      const { data: prefs } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
       if (prefs) {
         setDisplayName(prefs.display_name ?? '')
         setProvider(prefs.ai_provider ?? 'claude')
         setHouseholdId(prefs.household_id ?? '')
       }
       if (prefs?.household_id) {
-        const { data: hh } = await supabase.from('households').select('name').eq('id', prefs.household_id).single()
+        const { data: hh } = await supabase
+          .from('households')
+          .select('name')
+          .eq('id', prefs.household_id)
+          .single()
         if (hh) setHouseholdName(hh.name)
       }
     }
@@ -41,17 +51,14 @@ export default function SettingsPage() {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
     await supabase.from('user_preferences').update({
       display_name: displayName,
       ai_provider: provider,
       ...(apiKey ? { ai_api_key_enc: apiKey } : {}),
     }).eq('user_id', user.id)
-
     if (householdId) {
       await supabase.from('households').update({ name: householdName }).eq('id', householdId)
     }
-
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
     setLoading(false)
@@ -67,7 +74,6 @@ export default function SettingsPage() {
       role: 'member',
       invite_accepted: false,
     })
-    // In production, send email via Resend here
     alert(`Invite created! Share this link:\n${window.location.origin}/auth/invite/${token}`)
     setInviteEmail('')
   }
@@ -77,47 +83,71 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
 
-        {/* Profile */}
         <Section title="Your profile">
           <Field label="Display name">
-            <input value={displayName} onChange={e => setDisplayName(e.target.value)}
-              className={inputClass} placeholder="Jane" />
+            <input
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              className={inputClass}
+              placeholder="Jane"
+            />
           </Field>
         </Section>
 
-        {/* Household */}
         <Section title="Household">
           <Field label="Household name">
-            <input value={householdName} onChange={e => setHouseholdName(e.target.value)}
-              className={inputClass} placeholder="The Smith House" />
+            <input
+              value={householdName}
+              onChange={e => setHouseholdName(e.target.value)}
+              className={inputClass}
+              placeholder="The Smith House"
+            />
           </Field>
-          <Field label="Invite a member" hint="They'll get a link to join your household">
+          <Field label="Invite a member" hint="They will get a link to join your household">
             <div className="flex gap-2">
-              <input value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
-                className={`${inputClass} flex-1`} placeholder="partner@example.com" type="email" />
-              <button onClick={inviteMember} className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors">Send invite</button>
+              <input
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                className={inputClass + ' flex-1'}
+                placeholder="partner@example.com"
+                type="email"
+              />
+              <button
+                onClick={inviteMember}
+                className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors whitespace-nowrap"
+              >
+                Send invite
+              </button>
             </div>
           </Field>
         </Section>
 
-        {/* AI Provider */}
         <Section title="AI assistant">
           <Field label="Provider" hint="Which AI powers your chat assistant">
-            <select value={provider} onChange={e => setProvider(e.target.value)} className={inputClass}>
-              {PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            <select
+              value={provider}
+              onChange={e => setProvider(e.target.value)}
+              className={inputClass}
+            >
+              {PROVIDERS.map(p => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
             </select>
           </Field>
-          <Field label="Your own API key (optional)" hint="Bring your own key for unlimited usage. Leave blank to use Stead's shared key.">
+          <Field
+            label="Your own API key (optional)"
+            hint="Bring your own key for unlimited usage. Leave blank to use Stead's shared key."
+          >
             <input
               type="password"
               value={apiKey}
               onChange={e => setApiKey(e.target.value)}
               className={inputClass}
-              placeholder="sk-… or similar"
+              placeholder="sk-... or similar"
             />
           </Field>
           <p className="text-xs text-gray-400 mt-1">
-            Your key is stored encrypted and only used server-side — never exposed to the browser.
+            Your key is stored encrypted and only used server-side.
           </p>
         </Section>
 
@@ -127,7 +157,7 @@ export default function SettingsPage() {
             disabled={loading}
             className="px-5 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
-            {saved ? '✓ Saved' : loading ? 'Saving…' : 'Save changes'}
+            {saved ? '✓ Saved' : loading ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </div>
